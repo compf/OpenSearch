@@ -131,7 +131,7 @@ public class IndexTemplateMetadata {
 
     public IndexTemplateMetadata(
         String name,
-        int order,
+TemplateMetadataConfig templateMetadataConfig,
         Integer version,
         List<String> patterns,
         Settings settings,
@@ -142,7 +142,7 @@ public class IndexTemplateMetadata {
             throw new IllegalArgumentException("Index patterns must not be null or empty; got " + patterns);
         }
         this.name = name;
-        this.order = order;
+this.templateMetadataConfig = templateMetadataConfig;
         this.version = version;
         this.patterns = patterns;
         this.settings = settings;
@@ -154,9 +154,9 @@ public class IndexTemplateMetadata {
         return this.name;
     }
 
-    public int order() {
-        return this.order;
-    }
+public TemplateMetadataConfig templateMetadataConfig() {
+    return this.templateMetadataConfig;
+}
 
     @Nullable
     public Integer version() {
@@ -206,7 +206,7 @@ public class IndexTemplateMetadata {
 
         private String name;
 
-        private int order;
+private TemplateMetadataConfig templateMetadataConfig;
 
         private Integer version;
 
@@ -226,7 +226,7 @@ public class IndexTemplateMetadata {
 
         public Builder(IndexTemplateMetadata indexTemplateMetadata) {
             this.name = indexTemplateMetadata.name();
-            order(indexTemplateMetadata.order());
+templateMetadataConfig(indexTemplateMetadata.templateMetadataConfig());
             version(indexTemplateMetadata.version());
             patterns(indexTemplateMetadata.patterns());
             settings(indexTemplateMetadata.settings());
@@ -235,10 +235,10 @@ public class IndexTemplateMetadata {
             aliases = new HashMap<>(indexTemplateMetadata.aliases());
         }
 
-        public Builder order(int order) {
-            this.order = order;
-            return this;
-        }
+public Builder templateMetadataConfig(TemplateMetadataConfig templateMetadataConfig) {
+    this.templateMetadataConfig = templateMetadataConfig;
+    return this;
+}
 
         public Builder version(Integer version) {
             this.version = version;
@@ -276,7 +276,7 @@ public class IndexTemplateMetadata {
         }
 
         public IndexTemplateMetadata build() {
-            return new IndexTemplateMetadata(name, order, version, indexPatterns, settings, mappings, aliases);
+            return new IndexTemplateMetadata(name, templateMetadataConfig, settings, mappings, aliases);
         }
 
         public static IndexTemplateMetadata fromXContent(XContentParser parser, String templateName) throws IOException {

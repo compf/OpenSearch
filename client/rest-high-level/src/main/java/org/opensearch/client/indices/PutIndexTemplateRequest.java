@@ -80,7 +80,7 @@ public class PutIndexTemplateRequest extends ClusterManagerNodeRequest<PutIndexT
 
     private String cause = "";
 
-    private List<String> indexPatterns;
+    private TemplateMetadataConfig templateMetadataConfig;
 
     /**
      * This field corresponds to the deprecated 'template' parameter, which was replaced by
@@ -91,7 +91,7 @@ public class PutIndexTemplateRequest extends ClusterManagerNodeRequest<PutIndexT
     @Nullable
     private String template;
 
-    private int order;
+private TemplateMetadataConfig templateMetadataConfig;
 
     private boolean create;
 
@@ -137,32 +137,32 @@ public class PutIndexTemplateRequest extends ClusterManagerNodeRequest<PutIndexT
         return this.name;
     }
 
-    public PutIndexTemplateRequest patterns(List<String> indexPatterns) {
-        this.indexPatterns = indexPatterns;
-        return this;
-    }
+public PutIndexTemplateRequest templateMetadataConfig(TemplateMetadataConfig templateMetadataConfig) {
+    this.templateMetadataConfig = templateMetadataConfig;
+    return this;
+}
 
-    public List<String> patterns() {
-        return this.indexPatterns;
-    }
+public TemplateMetadataConfig templateMetadataConfig() {
+    return this.templateMetadataConfig;
+}
 
-    public PutIndexTemplateRequest order(int order) {
-        this.order = order;
-        return this;
-    }
+public PutIndexTemplateRequest templateMetadataConfig(TemplateMetadataConfig templateMetadataConfig) {
+    this.templateMetadataConfig = templateMetadataConfig;
+    return this;
+}
 
-    public int order() {
-        return this.order;
-    }
+public TemplateMetadataConfig templateMetadataConfig() {
+    return this.templateMetadataConfig;
+}
 
-    public PutIndexTemplateRequest version(Integer version) {
-        this.version = version;
-        return this;
-    }
+public PutIndexTemplateRequest templateMetadataConfig(TemplateMetadataConfig templateMetadataConfig) {
+    this.templateMetadataConfig = templateMetadataConfig;
+    return this;
+}
 
-    public Integer version() {
-        return this.version;
-    }
+public TemplateMetadataConfig templateMetadataConfig() {
+    return this.templateMetadataConfig;
+}
 
     /**
      * Set to {@code true} to force only creation, not an update of an index template. If it already
@@ -478,7 +478,7 @@ public class PutIndexTemplateRequest extends ClusterManagerNodeRequest<PutIndexT
 
     @Override
     public String[] indices() {
-        return indexPatterns.toArray(new String[0]);
+        return templateMetadataConfig.patterns().toArray(new String[0]);
     }
 
     @Override
