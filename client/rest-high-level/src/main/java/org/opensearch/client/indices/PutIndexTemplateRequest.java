@@ -80,8 +80,6 @@ public class PutIndexTemplateRequest extends ClusterManagerNodeRequest<PutIndexT
 
     private String cause = "";
 
-    private TemplateMetadataConfig templateMetadataConfig;
-
     /**
      * This field corresponds to the deprecated 'template' parameter, which was replaced by
      * 'index_patterns' in 6.0. It is stored and rendered to xContent separately from
@@ -91,7 +89,7 @@ public class PutIndexTemplateRequest extends ClusterManagerNodeRequest<PutIndexT
     @Nullable
     private String template;
 
-private TemplateMetadataConfig templateMetadataConfig;
+    private TemplateMetadataConfig templateMetadataConfig = new TemplateMetadataConfig(0, null, null);
 
     private boolean create;
 
@@ -113,7 +111,7 @@ private TemplateMetadataConfig templateMetadataConfig;
     @Override
     public ActionRequestValidationException validate() {
         ActionRequestValidationException validationException = null;
-        if (template == null && (indexPatterns == null || indexPatterns.size() == 0)) {
+        if (template == null && (templateMetadataConfig.patterns() == null || templateMetadataConfig.patterns().size() == 0)) {
             validationException = addValidationError("index patterns are missing", validationException);
         }
         return validationException;
@@ -137,32 +135,14 @@ private TemplateMetadataConfig templateMetadataConfig;
         return this.name;
     }
 
-public PutIndexTemplateRequest templateMetadataConfig(TemplateMetadataConfig templateMetadataConfig) {
-    this.templateMetadataConfig = templateMetadataConfig;
-    return this;
-}
+    public PutIndexTemplateRequest templateMetadataConfig(TemplateMetadataConfig templateMetadataConfig) {
+        this.templateMetadataConfig = templateMetadataConfig;
+        return this;
+    }
 
-public TemplateMetadataConfig templateMetadataConfig() {
-    return this.templateMetadataConfig;
-}
-
-public PutIndexTemplateRequest templateMetadataConfig(TemplateMetadataConfig templateMetadataConfig) {
-    this.templateMetadataConfig = templateMetadataConfig;
-    return this;
-}
-
-public TemplateMetadataConfig templateMetadataConfig() {
-    return this.templateMetadataConfig;
-}
-
-public PutIndexTemplateRequest templateMetadataConfig(TemplateMetadataConfig templateMetadataConfig) {
-    this.templateMetadataConfig = templateMetadataConfig;
-    return this;
-}
-
-public TemplateMetadataConfig templateMetadataConfig() {
-    return this.templateMetadataConfig;
-}
+    public TemplateMetadataConfig templateMetadataConfig() {
+        return this.templateMetadataConfig;
+    }
 
     /**
      * Set to {@code true} to force only creation, not an update of an index template. If it already
@@ -211,6 +191,33 @@ public TemplateMetadataConfig templateMetadataConfig() {
 
     public Settings settings() {
         return this.settings;
+    }
+
+    public List<String> patterns() {
+        return templateMetadataConfig.patterns();
+    }
+
+    public PutIndexTemplateRequest patterns(List<String> patterns) {
+        templateMetadataConfig.patterns(patterns);
+        return this;
+    }
+
+    public Integer version() {
+        return templateMetadataConfig.version();
+    }
+
+    public PutIndexTemplateRequest version(Integer version) {
+        templateMetadataConfig.version(version);
+        return this;
+    }
+
+    public int order() {
+        return templateMetadataConfig.order();
+    }
+
+    public PutIndexTemplateRequest order(int order) {
+        templateMetadataConfig.order(order);
+        return this;
     }
 
     /**
@@ -312,20 +319,20 @@ public TemplateMetadataConfig templateMetadataConfig() {
                 }
             } else if (name.equals("index_patterns")) {
                 if (entry.getValue() instanceof String) {
-                    patterns(Collections.singletonList((String) entry.getValue()));
+                    templateMetadataConfig.patterns(Collections.singletonList((String) entry.getValue()));
                 } else if (entry.getValue() instanceof List) {
                     List<String> elements = ((List<?>) entry.getValue()).stream().map(Object::toString).collect(Collectors.toList());
-                    patterns(elements);
+                    templateMetadataConfig.patterns(elements);
                 } else {
                     throw new IllegalArgumentException("Malformed [index_patterns] value, should be a string or a list of strings");
                 }
             } else if (name.equals("order")) {
-                order(XContentMapValues.nodeIntegerValue(entry.getValue(), order()));
+                templateMetadataConfig.order(XContentMapValues.nodeIntegerValue(entry.getValue(), templateMetadataConfig.order()));
             } else if ("version".equals(name)) {
                 if ((entry.getValue() instanceof Integer) == false) {
                     throw new IllegalArgumentException("Malformed [version] value, should be an integer");
                 }
-                version((Integer) entry.getValue());
+                templateMetadataConfig.version((Integer) entry.getValue());
             } else if (name.equals("settings")) {
                 if ((entry.getValue() instanceof Map) == false) {
                     throw new IllegalArgumentException("Malformed [settings] section, should include an inner object");
@@ -491,12 +498,12 @@ public TemplateMetadataConfig templateMetadataConfig() {
         if (template != null) {
             builder.field("template", template);
         } else {
-            builder.field("index_patterns", indexPatterns);
+            builder.field("index_patterns", templateMetadataConfig.patterns());
         }
 
-        builder.field("order", order);
+        builder.field("order", templateMetadataConfig.order());
         if (version != null) {
-            builder.field("version", version);
+            builder.field("version", templateMetadataConfig.version());
         }
 
         builder.startObject("settings");

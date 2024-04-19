@@ -63,9 +63,7 @@ public class IndexTemplateMetadata {
             final Map<String, AliasMetadata> aliasMap = alias.stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
             return new IndexTemplateMetadata(
                 name,
-                (Integer) a[0],
-                (Integer) a[1],
-                (List<String>) a[2],
+                new TemplateMetadataConfig((Integer) a[0], (Integer) a[1], (List<String>) a[2]),
                 (Settings) a[3],
                 (MappingMetadata) a[4],
                 aliasMap
@@ -99,8 +97,6 @@ public class IndexTemplateMetadata {
 
     private final String name;
 
-    private final int order;
-
     /**
      * The version is an arbitrary number managed by the user so that they can easily and quickly verify the existence of a given template.
      * Expected usage:
@@ -118,33 +114,26 @@ public class IndexTemplateMetadata {
      * GET /_template/my_template?filter_path=*.version
      * </code></pre>
      */
-    @Nullable
-    private final Integer version;
-
-    private final List<String> patterns;
 
     private final Settings settings;
 
     private final MappingMetadata mappings;
 
     private final Map<String, AliasMetadata> aliases;
+    private TemplateMetadataConfig templateMetadataConfig = new TemplateMetadataConfig(0, null, null);
 
     public IndexTemplateMetadata(
         String name,
-TemplateMetadataConfig templateMetadataConfig,
-        Integer version,
-        List<String> patterns,
+        TemplateMetadataConfig templateMetadataConfig,
         Settings settings,
         MappingMetadata mappings,
         final Map<String, AliasMetadata> aliases
     ) {
-        if (patterns == null || patterns.isEmpty()) {
-            throw new IllegalArgumentException("Index patterns must not be null or empty; got " + patterns);
+        if (templateMetadataConfig.patterns() == null || templateMetadataConfig.patterns().isEmpty()) {
+            throw new IllegalArgumentException("Index patterns must not be null or empty; got " + templateMetadataConfig.patterns());
         }
         this.name = name;
-this.templateMetadataConfig = templateMetadataConfig;
-        this.version = version;
-        this.patterns = patterns;
+        this.templateMetadataConfig = templateMetadataConfig;
         this.settings = settings;
         this.mappings = mappings;
         this.aliases = Collections.unmodifiableMap(aliases);
@@ -154,17 +143,36 @@ this.templateMetadataConfig = templateMetadataConfig;
         return this.name;
     }
 
-public TemplateMetadataConfig templateMetadataConfig() {
-    return this.templateMetadataConfig;
-}
+    public TemplateMetadataConfig templateMetadataConfig() {
+        return this.templateMetadataConfig;
+    }
 
     @Nullable
     public Integer version() {
-        return version;
+        return templateMetadataConfig.version();
+    }
+
+    public IndexTemplateMetadata version(Integer version) {
+        templateMetadataConfig.version(version);
+        return this;
     }
 
     public List<String> patterns() {
-        return this.patterns;
+        return this.templateMetadataConfig.patterns();
+    }
+
+    public IndexTemplateMetadata patterns(List<String> patterns) {
+        this.templateMetadataConfig.patterns(patterns);
+        return this;
+    }
+
+    public int order() {
+        return this.templateMetadataConfig.order();
+    }
+
+    public IndexTemplateMetadata order(int order) {
+        this.templateMetadataConfig.order(order);
+        return this;
     }
 
     public Settings settings() {
@@ -188,10 +196,10 @@ public TemplateMetadataConfig templateMetadataConfig() {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         IndexTemplateMetadata that = (IndexTemplateMetadata) o;
-        return order == that.order
+        return templateMetadataConfig.order() == that.templateMetadataConfig.order()
             && Objects.equals(name, that.name)
-            && Objects.equals(version, that.version)
-            && Objects.equals(patterns, that.patterns)
+            && Objects.equals(templateMetadataConfig.version(), that.templateMetadataConfig.version())
+            && Objects.equals(templateMetadataConfig.patterns(), that.templateMetadataConfig.patterns())
             && Objects.equals(settings, that.settings)
             && Objects.equals(mappings, that.mappings)
             && Objects.equals(aliases, that.aliases);
@@ -199,18 +207,22 @@ public TemplateMetadataConfig templateMetadataConfig() {
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, order, version, patterns, settings, mappings, aliases);
+        return Objects.hash(
+            name,
+            templateMetadataConfig.order(),
+            templateMetadataConfig.version(),
+            templateMetadataConfig.patterns(),
+            settings,
+            mappings,
+            aliases
+        );
     }
 
     public static class Builder {
 
         private String name;
 
-private TemplateMetadataConfig templateMetadataConfig;
-
-        private Integer version;
-
-        private List<String> indexPatterns;
+        private TemplateMetadataConfig templateMetadataConfig = new TemplateMetadataConfig(0, null, Collections.emptyList());
 
         private Settings settings = Settings.Builder.EMPTY_SETTINGS;
 
@@ -226,7 +238,7 @@ private TemplateMetadataConfig templateMetadataConfig;
 
         public Builder(IndexTemplateMetadata indexTemplateMetadata) {
             this.name = indexTemplateMetadata.name();
-templateMetadataConfig(indexTemplateMetadata.templateMetadataConfig());
+            templateMetadataConfig(indexTemplateMetadata.templateMetadataConfig());
             version(indexTemplateMetadata.version());
             patterns(indexTemplateMetadata.patterns());
             settings(indexTemplateMetadata.settings());
@@ -235,18 +247,23 @@ templateMetadataConfig(indexTemplateMetadata.templateMetadataConfig());
             aliases = new HashMap<>(indexTemplateMetadata.aliases());
         }
 
-public Builder templateMetadataConfig(TemplateMetadataConfig templateMetadataConfig) {
-    this.templateMetadataConfig = templateMetadataConfig;
-    return this;
-}
+        public Builder templateMetadataConfig(TemplateMetadataConfig templateMetadataConfig) {
+            this.templateMetadataConfig = templateMetadataConfig;
+            return this;
+        }
 
         public Builder version(Integer version) {
-            this.version = version;
+            this.templateMetadataConfig.version(version);
             return this;
         }
 
         public Builder patterns(List<String> indexPatterns) {
-            this.indexPatterns = indexPatterns;
+            this.templateMetadataConfig.patterns(indexPatterns);
+            return this;
+        }
+
+        public Builder order(int order) {
+            this.templateMetadataConfig.order(order);
             return this;
         }
 
